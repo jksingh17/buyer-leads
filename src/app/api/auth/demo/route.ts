@@ -78,12 +78,20 @@ export async function POST() {
     }
 
     return res;
-  } catch (err: any) {
-    // last-resort catch (shouldn't be hit because of inner try/catch)
-    console.error("[demo] unexpected error:", err);
+  } catch (err: unknown) {
+  console.error("[demo] unexpected error:", err);
+
+  if (err instanceof Error) {
     return NextResponse.json(
-      { ok: false, error: err?.message ?? "Unexpected error", stack: err?.stack },
+      { ok: false, error: err.message, stack: err.stack },
       { status: 500 }
     );
   }
+
+  return NextResponse.json(
+    { ok: false, error: "Unexpected error", stack: String(err) },
+    { status: 500 }
+  );
+}
+
 }

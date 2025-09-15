@@ -1,17 +1,16 @@
-// app/buyers/page.tsx
 import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserServer } from "@/lib/auth";
 import FiltersAndSearch from "./components/FiltersAndSearch";
 
-type Props = {
-  searchParams?: Record<string, string | string[] | undefined>;
-};
-
 const PAGE_SIZE = 10;
 
-export default async function BuyersPage({ searchParams }: Props) {
+export default async function BuyersPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const _user = await getCurrentUserServer(); // may be null
 
   const page = Number((searchParams?.page as string) ?? "1");

@@ -1,20 +1,23 @@
-// src/app/api/buyers/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buyerCreateSchema } from "@/lib/buyer-schemas";
 import { requireUserServer } from "@/lib/auth";
-
-/**
- * PATCH /api/buyers/:id
- */
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const id = params.id;
+type AuthUser = {
+  id: string;
+  role: string;
+};
+// PATCH
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
 
   // auth
-  let user: any;
+  let user: AuthUser;
   try {
     user = await requireUserServer();
-  } catch (err) {
+  } catch {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
@@ -22,19 +25,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const body = await req.json();
     const parsed = buyerCreateSchema.parse(body);
 
-    // find existing
     const current = await prisma.buyers.findUnique({ where: { id } });
     if (!current) {
       return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
     }
 
-    // ownership check (allow admin)
     const isAdmin = (user.role ?? "USER") === "ADMIN";
     if (current.ownerId !== user.id && !isAdmin) {
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
     }
 
-    // concurrency check if client provided token
     if (body.updatedAt) {
       const prev = new Date(body.updatedAt).getTime();
       const curr = new Date(current.updatedAt).getTime();
@@ -63,7 +63,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       status: parsed.status ?? current.status,
     };
 
-    // update + history transaction
     const updated = await prisma.$transaction(async (tx) => {
       const after = await tx.buyers.update({ where: { id }, data: updateData });
 
@@ -84,6 +83,58 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ ok: false, error: "Validation error", details: err }, { status: 400 });
     }
     console.error("PATCH /api/buyers/[id] error:", err);
+    return NextResponse.json({ ok: false, error: String(err?.message ?? err) }, { status: 500 });
+  }
+}
+
+// GET
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    const buyer = await prisma.buyers.findUnique({ where: { id } });
+    if (!buyer) {
+      return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, buyer }, { status: 200 });
+  } catch (err: any) {
+    console.error("GET /api/buyers/[id] error:", err);
+    return NextResponse.json({ ok: false, error: String(err?.message ?? err) }, { status: 500 });
+  }
+}
+
+// DELETE
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  let user: any;
+  try {
+    user = await requireUserServer();
+  } catch {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const current = await prisma.buyers.findUnique({ where: { id } });
+    if (!current) {
+      return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
+    }
+
+    const isAdmin = (user.role ?? "USER") === "ADMIN";
+    if (current.ownerId !== user.id && !isAdmin) {
+      return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.buyers.delete({ where: { id } });
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (err: any) {
+    console.error("DELETE /api/buyers/[id] error:", err);
     return NextResponse.json({ ok: false, error: String(err?.message ?? err) }, { status: 500 });
   }
 }

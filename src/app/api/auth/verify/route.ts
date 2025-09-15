@@ -56,11 +56,17 @@ export async function GET(req: NextRequest) {
     });
 
     return response;
-  } catch (err: any) {
-    if (err?.name === 'ZodError') {
-      return NextResponse.json({ error: 'Missing token' }, { status: 400 });
-    }
-    console.error('verify error', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (err: unknown) {
+  if (err instanceof Error && err.name === "ZodError") {
+    return NextResponse.json({ error: "Missing token" }, { status: 400 });
   }
+
+  console.error("verify error", err);
+
+  return NextResponse.json(
+    { error: "Server error" },
+    { status: 500 }
+  );
+}
+
 }

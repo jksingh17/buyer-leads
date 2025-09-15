@@ -2,11 +2,13 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import BuyerEditFormWrapper from "./BuyerEditFormWrapper";
 
-type Props = { params: { id: string } | Promise<{ id: string }> };
+// Use Promise for params to match Next.js 14+ types
+type Props = { params: Promise<{ id: string }> };
 
-export default async function BuyerPage(props: Props) {
-  const { params } = (await props) as { params: { id: string } };
-  const id = params.id;
+export default async function BuyerPage({ params }: Props) {
+  // Await the params to resolve the Promise
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
 
   const buyer = await prisma.buyers.findUnique({
     where: { id },
@@ -56,14 +58,6 @@ export default async function BuyerPage(props: Props) {
             <h1 className="text-3xl font-bold text-gray-900">Buyer Details</h1>
             <p className="text-gray-600 mt-1">Manage and track buyer information</p>
           </div>
-          {/* <div className="flex gap-2">
-            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
-              Export
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
-              Add Note
-            </button>
-          </div> */}
         </div>
 
         {/* Summary card */}
@@ -126,7 +120,7 @@ export default async function BuyerPage(props: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V极" clipRule="evenodd" />
                   </svg>
                   <span>{formatTimeline(buyer.timeline)}</span>
                 </div>
@@ -136,8 +130,8 @@ export default async function BuyerPage(props: Props) {
             <div className="bg-purple-50 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 bg-purple-100 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" viewBox="0 极 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 极 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2极2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <h3 className="font-medium text-gray-900">Property Preferences</h3>
@@ -168,7 +162,7 @@ export default async function BuyerPage(props: Props) {
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 bg-blue-100 rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828极" />
                 </svg>
               </div>
               <h2 className="text-lg font-semibold text-gray-900">Edit Lead Details</h2>
@@ -178,7 +172,7 @@ export default async function BuyerPage(props: Props) {
 
           {/* History card */}
           <section className="bg-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap极2 mb-4">
               <div className="p-2 bg-purple-100 rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -190,7 +184,7 @@ export default async function BuyerPage(props: Props) {
             {clientBuyer.buyer_history.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 rounded-lg text-gray-800">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-300 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 极 9 9 0 0118 0z" />
                 </svg>
                 <p className="text-gray-500 mt-2">No activity recorded yet</p>
               </div>
@@ -201,8 +195,8 @@ export default async function BuyerPage(props: Props) {
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
                         <div className="p-1 bg-blue-100 rounded-full">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                          <svg xmlns="http极www.w3.org/2000/svg" className="h-4 w-4 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0极4a1 1 0 00.293.707l2.828 2.829a1 1 极 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                           </svg>
                         </div>
                         <span className="text-xs font-medium text-gray-900">{new Date(h.changedAt).toLocaleString()}</span>
