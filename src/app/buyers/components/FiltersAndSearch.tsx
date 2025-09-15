@@ -11,6 +11,7 @@ export default function FiltersAndSearch({ initial }: { initial: any }) {
   const [propertyType, setPropertyType] = useState(initial.propertyType ?? "");
   const [status, setStatus] = useState(initial.status ?? "");
   const [timeline, setTimeline] = useState(initial.timeline ?? "");
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // debounce search
   useEffect(() => {
@@ -40,64 +41,113 @@ export default function FiltersAndSearch({ initial }: { initial: any }) {
     setPropertyType("");
     setStatus("");
     setTimeline("");
+    setIsExpanded(false);
     router.replace("/buyers");
   }
 
   return (
-    <div className="rounded bg-white p-4 shadow-sm flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-2">
-        <input
-          aria-label="Search by name, phone or email"
-          placeholder="Search name, phone or email"
-          className="rounded border px-3 py-2 text-gray-800 text-gray-800"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="rounded border px-2 py-2 text-gray-800">
-          <option value="">City</option>
-          <option value="CHANDIGARH">Chandigarh</option>
-          <option value="MOHALI">Mohali</option>
-          <option value="ZIRAKPUR">Zirakpur</option>
-          <option value="PANCHKULA">Panchkula</option>
-          <option value="OTHER">Other</option>
-        </select>
-
-        <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} className="rounded border px-2 py-2 text-gray-800">
-          <option value="">Property</option>
-          <option value="APARTMENT">Apartment</option>
-          <option value="VILLA">Villa</option>
-          <option value="PLOT">Plot</option>
-          <option value="OFFICE">Office</option>
-          <option value="RETAIL">Retail</option>
-        </select>
-
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded border px-2 py-2 text-gray-800">
-          <option value="">Status</option>
-          <option value="NEW">New</option>
-          <option value="QUALIFIED">Qualified</option>
-          <option value="CONTACTED">Contacted</option>
-          <option value="VISITED">Visited</option>
-          <option value="NEGOTIATION">Negotiation</option>
-          <option value="CONVERTED">Converted</option>
-          <option value="DROPPED">Dropped</option>
-        </select>
-
-        <select value={timeline} onChange={(e) => setTimeline(e.target.value)} className="rounded border px-2 py-2 text-gray-800">
-          <option value="">Timeline</option>
-          <option value="ZERO_TO_THREE">0-3m</option>
-          <option value="THREE_TO_SIX">3-6m</option>
-          <option value="MORE_THAN_SIX">&gt;6m</option>
-          <option value="EXPLORING">Exploring</option>
-        </select>
+    <div className="rounded-lg bg-white p-4 shadow-sm border border-gray-200">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between mb-3">
+        <h3 className="font-medium text-gray-800">Filters</h3>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            viewBox="0 0 20 20" 
+            fill="currentColor"
+          >
+            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <button onClick={() => applyFilters({ q, city, propertyType, status, timeline })} className="rounded border px-3 py-2 text-gray-800">
-          Apply
-        </button>
-        <button onClick={reset} className="rounded border px-3 py-2 text-gray-800">
-          Reset
-        </button>
+      <div className={`${isExpanded ? 'block' : 'hidden'} md:block space-y-3 md:space-y-0 md:flex md:items-center md:justify-between md:gap-3`}>
+        {/* Search Input */}
+        <div className="w-full md:flex-1">
+          <input
+            aria-label="Search by name, phone or email"
+            placeholder="Search name, phone or email"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+
+        {/* Filter Dropdowns - Grid layout for mobile */}
+        <div className="grid grid-cols-2 gap-3 md:flex md:items-center md:gap-2">
+          <select 
+            value={city} 
+            onChange={(e) => setCity(e.target.value)} 
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-sm"
+          >
+            <option value="">All Cities</option>
+            <option value="CHANDIGARH">Chandigarh</option>
+            <option value="MOHALI">Mohali</option>
+            <option value="ZIRAKPUR">Zirakpur</option>
+            <option value="PANCHKULA">Panchkula</option>
+            <option value="OTHER">Other</option>
+          </select>
+
+          <select 
+            value={propertyType} 
+            onChange={(e) => setPropertyType(e.target.value)} 
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-sm"
+          >
+            <option value="">All Properties</option>
+            <option value="APARTMENT">Apartment</option>
+            <option value="VILLA">Villa</option>
+            <option value="PLOT">Plot</option>
+            <option value="OFFICE">Office</option>
+            <option value="RETAIL">Retail</option>
+          </select>
+
+          <select 
+            value={status} 
+            onChange={(e) => setStatus(e.target.value)} 
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-sm"
+          >
+            <option value="">All Status</option>
+            <option value="NEW">New</option>
+            <option value="QUALIFIED">Qualified</option>
+            <option value="CONTACTED">Contacted</option>
+            <option value="VISITED">Visited</option>
+            <option value="NEGOTIATION">Negotiation</option>
+            <option value="CONVERTED">Converted</option>
+            <option value="DROPPED">Dropped</option>
+          </select>
+
+          <select 
+            value={timeline} 
+            onChange={(e) => setTimeline(e.target.value)} 
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-sm"
+          >
+            <option value="">All Timelines</option>
+            <option value="ZERO_TO_THREE">0-3m</option>
+            <option value="THREE_TO_SIX">3-6m</option>
+            <option value="MORE_THAN_SIX">&gt;6m</option>
+            <option value="EXPLORING">Exploring</option>
+          </select>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 pt-3 md:pt-0 border-t border-gray-200 md:border-t-0">
+          <button 
+            onClick={() => applyFilters({ q, city, propertyType, status, timeline })} 
+            className="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm"
+          >
+            Apply
+          </button>
+          <button 
+            onClick={reset} 
+            className="flex-1 md:flex-none px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-200 text-sm"
+          >
+            Reset
+          </button>
+        </div>
       </div>
     </div>
   );
