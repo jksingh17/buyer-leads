@@ -6,19 +6,27 @@ import FiltersAndSearch from "./components/FiltersAndSearch";
 
 const PAGE_SIZE = 10;
 
+function getSearchParam(
+  params: { [key: string]: string | string[] | undefined }, 
+  key: string
+): string | undefined {
+  const value = params[key];
+  return typeof value === 'string' ? value : Array.isArray(value) ? value[0] : undefined;
+}
 export default async function BuyersPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams 
+}: { 
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
 }) {
-  const _user = await getCurrentUserServer(); // may be null
+  const resolvedSearchParams = await searchParams;
+  const _user = await getCurrentUserServer();
+  const page = Number(getSearchParam(resolvedSearchParams, 'page') || '1');
+  const q = getSearchParam(resolvedSearchParams, 'q') || '';
+  const city = getSearchParam(resolvedSearchParams, 'city');
+  const propertyType = getSearchParam(resolvedSearchParams, 'propertyType');
+  const status = getSearchParam(resolvedSearchParams, 'status');
+  const timeline = getSearchParam(resolvedSearchParams, 'timeline');
 
-  const page = Number((searchParams?.page as string) ?? "1");
-  const q = (searchParams?.q as string) ?? "";
-  const city = (searchParams?.city as string) ?? undefined;
-  const propertyType = (searchParams?.propertyType as string) ?? undefined;
-  const status = (searchParams?.status as string) ?? undefined;
-  const timeline = (searchParams?.timeline as string) ?? undefined;
 
   const where: any = {};
   if (city) where.city = city;
