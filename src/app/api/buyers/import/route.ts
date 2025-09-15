@@ -1,10 +1,27 @@
 // app/api/buyers/import/route.ts
 import { NextResponse } from "next/server";
-import { csvRowSchema, buyerCreateValidated } from "@/lib/buyer-schemas";
+import { csvRowSchema, buyerCreateValidated, buyerCreateSchema } from "@/lib/buyer-schemas";
 import { prisma } from "@/lib/prisma";
 import { requireUserServer } from "@/lib/auth";
 import type { Prisma } from "@prisma/client";
-
+import z from "zod";
+ 
+interface CreatePayload {
+  fullName: string;
+  email?: string | null;
+  phone: string;
+  city: string;
+  propertyType: string;
+  bhk?: number | null;
+  purpose: string;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  timeline: string;
+  source: string;
+  notes?: string | null;
+  tags?: string[];
+  status: string;
+}
 /**
  * Very small CSV parser (handles quoted fields, commas).
  * Not a full featured CSV lib; good enough for simple imports.
@@ -117,7 +134,7 @@ export async function POST(req: Request) {
     }
 
     // map CSV strings to typed fields expected by buyerCreateValidated
-    const mapped: any = {
+    const mapped: z.infer<typeof buyerCreateSchema> = {
       fullName: obj.fullName,
       email: obj.email || null,
       phone: obj.phone,
@@ -190,7 +207,10 @@ export async function POST(req: Request) {
 
       inserted = createdRows.length;
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
+    if(e instanceof Error && e.name === "P2002") {
+      return NextResponse.json({ ok: false, error: "Duplicate entry (email or phone already exists)" }, { status: 400 });
+    }
     console.error("CSV insert error:", e);
     return NextResponse.json({ ok: false, error: "DB insert error", details: String(e) }, { status: 500 });
   }
