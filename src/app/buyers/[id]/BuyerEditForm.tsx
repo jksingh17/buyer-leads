@@ -23,7 +23,10 @@ type Buyer = {
   status: string;
   updatedAt: string;
 };
-
+type ServerError = {
+  error?: string;
+  message?: string;
+};
 export default function BuyerEditForm({ buyer }: { buyer: Buyer }) {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -99,10 +102,7 @@ export default function BuyerEditForm({ buyer }: { buyer: Buyer }) {
         credentials: "include",
       });
 
-type ServerError = {
-  error?: string;
-  message?: string;
-};
+
 
 const text = await res.text();
 let json: ServerError | null = null;
@@ -112,6 +112,7 @@ try {
 } catch {
   json = null;
 }
+  setSaving(false);
 
 if (!res.ok) {
   switch (res.status) {
@@ -129,7 +130,6 @@ if (!res.ok) {
       setServerMessage(json?.error ?? `Save failed (${res.status})`);
       break;
   }
-  setSaving(false);
   return;
 }
 
