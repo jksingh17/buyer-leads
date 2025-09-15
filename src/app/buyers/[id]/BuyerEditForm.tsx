@@ -5,7 +5,24 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { buyerCreateSchema } from "@/lib/buyer-schemas";
 
-type Buyer = any;
+type Buyer = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  city: string;
+  propertyType: string;
+  bhk: string;
+  purpose: string;
+  budgetMin: number | null;
+  budgetMax: number | null;
+  timeline: string;
+  source: string;
+  notes: string | null;
+  tags: string[];
+  status: string;
+  updatedAt: string;
+};
 
 export default function BuyerEditForm({ buyer }: { buyer: Buyer }) {
   const router = useRouter();
@@ -41,20 +58,21 @@ export default function BuyerEditForm({ buyer }: { buyer: Buyer }) {
     e.preventDefault();
     setServerMessage(null);
 
-    const payload: any = {
+    const payload: Buyer = {
+      id: buyer.id,
       fullName: form.fullName,
-      email: form.email || undefined,
+      email: form.email ,
       phone: form.phone,
       city: form.city,
       propertyType: form.propertyType,
-      bhk: form.bhk || undefined,
+      bhk: form.bhk ,
       purpose: form.purpose,
-      budgetMin: form.budgetMin ? Number(form.budgetMin) : undefined,
-      budgetMax: form.budgetMax ? Number(form.budgetMax) : undefined,
+      budgetMin: form.budgetMin ? Number(form.budgetMin) : null,
+      budgetMax: form.budgetMax ? Number(form.budgetMax) : null,
       timeline: form.timeline,
       source: form.source,
-      notes: form.notes || undefined,
-      tags: form.tags ? form.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : undefined,
+      notes: form.notes || null,
+      tags: form.tags ? form.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [],
       status: form.status,
       updatedAt: form.updatedAt,
     };
@@ -81,30 +99,52 @@ export default function BuyerEditForm({ buyer }: { buyer: Buyer }) {
         credentials: "include",
       });
 
-      const text = await res.text();
-      let json: any = null;
-      try { json = text ? JSON.parse(text) : null; } catch { json = null; }
+type ServerError = {
+  error?: string;
+  message?: string;
+};
 
-      if (!res.ok) {
-        if (res.status === 409) {
-          setServerMessage(json?.message ?? "Record changed on server. Please refresh.");
-        } else if (res.status === 400) {
-          setServerMessage(json?.error ?? "Validation failed on server.");
-        } else if (res.status === 401 || res.status === 403) {
-          setServerMessage("You are not allowed to perform this action.");
-        } else {
-          setServerMessage(json?.error ?? `Save failed (${res.status})`);
-        }
-        setSaving(false);
-        return;
-      }
+const text = await res.text();
+let json: ServerError | null = null;
+
+try {
+  json = text ? (JSON.parse(text) as ServerError) : null;
+} catch {
+  json = null;
+}
+
+if (!res.ok) {
+  switch (res.status) {
+    case 409:
+      setServerMessage(json?.message ?? "Record changed on server. Please refresh.");
+      break;
+    case 400:
+      setServerMessage(json?.error ?? "Validation failed on server.");
+      break;
+    case 401:
+    case 403:
+      setServerMessage("You are not allowed to perform this action.");
+      break;
+    default:
+      setServerMessage(json?.error ?? `Save failed (${res.status})`);
+      break;
+  }
+  setSaving(false);
+  return;
+}
+
 
       // success: refresh server data (page is server-rendered)
       router.refresh();
-    } catch (err: any) {
-      setServerMessage(err?.message ?? "Network error");
-      setSaving(false);
-    }
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setServerMessage(err.message);
+  } else {
+    setServerMessage("Network error");
+  }
+  setSaving(false);
+}
+
   }
 
   const showBhk = form.propertyType === "APARTMENT" || form.propertyType === "VILLA";

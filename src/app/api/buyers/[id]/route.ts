@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buyerCreateSchema } from "@/lib/buyer-schemas";
 import { requireUserServer } from "@/lib/auth";
+  import { Prisma } from "@prisma/client";
+  import { z } from "zod";
 type AuthUser = {
   id: string;
   role: string;
@@ -46,22 +48,26 @@ export async function PATCH(
       }
     }
 
-    const updateData: any = {
-      fullName: parsed.fullName,
-      email: parsed.email ?? null,
-      phone: parsed.phone,
-      city: parsed.city,
-      propertyType: parsed.propertyType,
-      bhk: parsed.bhk ?? null,
-      purpose: parsed.purpose,
-      budgetMin: parsed.budgetMin ?? null,
-      budgetMax: parsed.budgetMax ?? null,
-      timeline: parsed.timeline,
-      source: parsed.source,
-      notes: parsed.notes ?? null,
-      tags: parsed.tags ?? [],
-      status: parsed.status ?? current.status,
-    };
+
+
+
+const updateData: z.infer<typeof buyerCreateSchema> = {
+  fullName: parsed.fullName,
+  email: parsed.email ?? null,
+  phone: parsed.phone,
+  city: parsed.city,
+  propertyType: parsed.propertyType,
+  bhk: parsed.bhk ?? null,
+  purpose: parsed.purpose,
+  budgetMin: parsed.budgetMin ?? null,
+  budgetMax: parsed.budgetMax ?? null,
+  timeline: parsed.timeline,
+  source: parsed.source,
+  notes: parsed.notes ?? null,
+  tags: parsed.tags ?? [],
+  status: parsed.status ?? current.status,
+};
+
 
     const updated = await prisma.$transaction(async (tx) => {
       const after = await tx.buyers.update({ where: { id }, data: updateData });
